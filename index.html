@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Un corazón para ti ❤️</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: radial-gradient(circle, #240015, #050008);
+        overflow: hidden;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: Arial, sans-serif;
+    }
+
+    canvas {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+
+    h1 {
+        position: absolute;
+        top: 12%;
+        color: #ff8bbd;
+        text-shadow: 0 0 15px #ff0055;
+        font-size: clamp(20px, 5vw, 36px);
+        text-align: center;
+        opacity: 0;
+        animation: aparecer 2s ease forwards;
+        animation-delay: 3s;
+        z-index: 2;
+    }
+
+    @keyframes aparecer {
+        to { opacity: 1; }
+    }
+</style>
+</head>
+
+<body>
+
+<h1>Hecho con todo el amor que te tengo mi pupeshito te amooo cachetitosh</h1>
+<canvas id="corazon"></canvas>
+
+<script>
+const canvas = document.getElementById("corazon");
+const ctx = canvas.getContext("2d");
+
+let ancho, alto;
+let puntos = [];
+let progreso = 0;
+let particulas = [];
+
+function ajustarPantalla() {
+    canvas.width = ancho = window.innerWidth;
+    canvas.height = alto = window.innerHeight;
+    crearCorazon();
+}
+
+function crearCorazon() {
+    puntos = [];
+
+    const escala = Math.min(ancho, alto) / 38;
+
+    for (let t = 0; t < Math.PI * 2; t += 0.025) {
+        const x = 16 * Math.pow(Math.sin(t), 3);
+        const y = 13 * Math.cos(t)
+                - 5 * Math.cos(2 * t)
+                - 2 * Math.cos(3 * t)
+                - Math.cos(4 * t);
+
+        puntos.push({
+            x: ancho / 2 + x * escala,
+            y: alto / 2 - y * escala
+        });
+    }
+}
+
+function crearParticula(x, y) {
+    particulas.push({
+        x: Math.random() * ancho,
+        y: alto + Math.random() * 100,
+        destinoX: x,
+        destinoY: y,
+        tamano: Math.random() * 2.5 + 1,
+        velocidad: Math.random() * 0.045 + 0.02,
+        brillo: Math.random() * 0.5 + 0.5
+    });
+}
+
+function dibujar() {
+    ctx.clearRect(0, 0, ancho, alto);
+
+    // Pequeñas estrellas en el fondo
+    for (let i = 0; i < 2; i++) {
+        ctx.fillStyle = "rgba(255,100,170,0.5)";
+        ctx.beginPath();
+        ctx.arc(
+            Math.random() * ancho,
+            Math.random() * alto,
+            Math.random() * 1.5,
+            0, Math.PI * 2
+        );
+        ctx.fill();
+    }
+
+    // El corazón se forma gradualmente
+    if (progreso < puntos.length) {
+        for (let i = 0; i < 5; i++) {
+            if (progreso < puntos.length) {
+                const p = puntos[progreso];
+                crearParticula(p.x, p.y);
+                progreso++;
+            }
+        }
+    }
+
+    // Animación de las partículas
+    particulas.forEach(p => {
+        p.x += (p.destinoX - p.x) * p.velocidad;
+        p.y += (p.destinoY - p.y) * p.velocidad;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.tamano, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, ${Math.floor(30 + p.brillo * 70)}, 120, 0.9)`;
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = "#ff0055";
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    });
+
+    // Resplandor del corazón terminado
+    if (progreso >= puntos.length) {
+        const pulso = 1 + Math.sin(Date.now() / 250) * 0.025;
+
+        ctx.save();
+        ctx.translate(ancho / 2, alto / 2);
+        ctx.scale(pulso, pulso);
+        ctx.translate(-ancho / 2, -alto / 2);
+
+        ctx.beginPath();
+        puntos.forEach((p, i) => {
+            if (i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+        });
+        ctx.closePath();
+
+        ctx.strokeStyle = "#ff174f";
+        ctx.lineWidth = 2;
+        ctx.shadowBlur = 25;
+        ctx.shadowColor = "#ff0055";
+        ctx.stroke();
+
+        ctx.restore();
+    }
+
+    requestAnimationFrame(dibujar);
+}
+
+window.addEventListener("resize", ajustarPantalla);
+ajustarPantalla();
+dibujar();
+</script>
+
+</body>
+</html>
